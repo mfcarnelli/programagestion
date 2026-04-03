@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = env("DATABASE_URL="mysql://u240116336_gestor2:Carnelli0852!@localhost:3306/u240116336_gestor2"
+  url      = env("DATABASE_URL="mysql://u240116336_gestor2:Carnelli0852@auth-db1844.hstgr.io:3306/u240116336_gestor2"
 ")
 }
 

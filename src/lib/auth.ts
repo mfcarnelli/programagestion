@@ -70,5 +70,5 @@ export const authOptions: NextAuthOptions = {
   session: {
     strategy: "jwt",
   },
-  secret: process.env.NEXTAUTH_SECRET || "super-secret-key-ic-presupuestos-2024",
+  secret: process.env.NEXTAUTH_SECRET || "uR9kP2xvL8mQ4sT7zN1aB6cF0hJ3wE5y",
 };
