@@ -1,0 +1,188 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id                 String    @id @default(uuid())
+  nombre             String
+  username           String    @unique
+  password           String
+  rol                String    @default("VENDEDOR")
+  activo             Boolean   @default(true)
+  celular            String?
+  direccion          String?
+  fechaNacimiento    DateTime?
+  mutualista         String?
+  porcentajeComision Float     @default(0)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  clientes           Cliente[]
+}
+
+model CategoriaInsumo {
+  id        String   @id @default(uuid())
+  nombre    String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  insumos   Insumo[]
+}
+
+model Insumo {
+  id                 String              @id @default(uuid())
+  nombre             String
+  descripcion        String?
+  categoriaId        String?
+  tipo               String              @default("OTRO")
+  gramaje            Float?
+  medidaAncho        Float?
+  medidaLargo        Float?
+  cantidadPaquete    Int?
+  talles             String?
+  colores            String?
+  unidadMedida       String              @default("UNIDAD")
+  costoUnitario      Float               @default(0)
+  proveedor          String?
+  stockActual        Float               @default(0)
+  stockMinimo        Float               @default(0)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  consumos           Consumo[]
+  categoria          CategoriaInsumo?    @relation(fields: [categoriaId], references: [id])
+  insumosPresupuesto InsumoPresupuesto[]
+}
+
+model Gasto {
+  id            String   @id @default(uuid())
+  nombre        String
+  categoria     String
+  monto         Float
+  frecuencia    String
+  fecha         DateTime @default(now())
+  observaciones String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Consumo {
+  id         String   @id @default(uuid())
+  insumoId   String
+  cantidad   Float
+  fecha      DateTime @default(now())
+  motivo     String?
+  costoTotal Float    @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  insumo     Insumo   @relation(fields: [insumoId], references: [id])
+}
+
+model Cliente {
+  id           String        @id @default(uuid())
+  nombre       String
+  email        String?
+  telefono     String?
+  empresa      String?
+  documento    String?
+  direccion    String?
+  ciudad       String?
+  provincia    String?
+  notas        String?
+  vendedorId   String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  vendedor     Usuario?      @relation(fields: [vendedorId], references: [id])
+  presupuestos Presupuesto[]
+}
+
+model Presupuesto {
+  id                    String               @id @default(uuid())
+  numero                Int                  @unique
+  clienteId             String
+  fecha                 DateTime             @default(now())
+  descripcion           String
+  cantidad              Int                  @default(1)
+  tipoTrabajo           String
+  costoMateriales       Float                @default(0)
+  costoProcesos         Float                @default(0)
+  costoTotal            Float                @default(0)
+  margenGanancia        Float                @default(0)
+  impuestos             Float                @default(0)
+  precioFinal           Float                @default(0)
+  estado                String               @default("PENDIENTE")
+  observaciones         String?
+  archivoReferencia     String?
+  estadoPago            String               @default("PENDIENTE")
+  montoPagado           Float                @default(0)
+  fechaEntrega          DateTime?
+  estadoProduccion      String               @default("EN_ESPERA")
+  comisionPagada        Boolean              @default(false)
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
+  sectorProduccion      String?
+  fechaFinProduccion    DateTime?
+  fechaInicioProduccion DateTime?
+  operarioProduccion    String?
+  // Comprobante de Envío (Expedición)
+  comprobanteEnvio      String?              // Ruta o URL de la foto del remito/ticket de envío
+  textoComprobante      String?              // Texto extraído por OCR para búsquedas rápidas
+
+  // Tiempos de trazabilidad (en segundos)
+  tiempoPreparacion     Int                  @default(0)
+  tiempoImpresion       Int                  @default(0)
+  tiempoPausado         Int                  @default(0)
+  
+  // Marca de tiempo de cuándo inició la actividad actual
+  inicioActividad       DateTime?
+  
+  // Estado específico para los cronómetros
+  estadoTrazabilidad    String               @default("NO_INICIADO") // NO_INICIADO, PREPARACION, IMPRESION, PAUSADO, FINALIZADO
+
+  insumos               InsumoPresupuesto[]
+  cliente               Cliente              @relation(fields: [clienteId], references: [id])
+  procesos              ProcesoPresupuesto[]
+  registrosTrazabilidad RegistroTrazabilidad[]
+}
+
+model RegistroTrazabilidad {
+  id                String      @id @default(uuid())
+  presupuestoId     String
+  sector            String
+  operario          String?
+  tiempoPreparacion Int         @default(0)
+  tiempoImpresion   Int         @default(0)
+  tiempoPausado     Int         @default(0)
+  tiempoTotal       Int         @default(0)
+  fechaRegistro     DateTime    @default(now())
+  presupuesto       Presupuesto @relation(fields: [presupuestoId], references: [id], onDelete: Cascade)
+}
+
+model InsumoPresupuesto {
+  id            String      @id @default(uuid())
+  presupuestoId String
+  insumoId      String
+  cantidad      Float
+  costoUnitario Float
+  costoTotal    Float
+  insumo        Insumo      @relation(fields: [insumoId], references: [id])
+  presupuesto   Presupuesto @relation(fields: [presupuestoId], references: [id], onDelete: Cascade)
+}
+
+model ProcesoPresupuesto {
+  id            String      @id @default(uuid())
+  presupuestoId String
+  nombre        String
+  descripcion   String?
+  costo         Float
+  presupuesto   Presupuesto @relation(fields: [presupuestoId], references: [id], onDelete: Cascade)
+}
+
+model Configuracion {
+  id             String   @id @default("GLOBAL")
+  margenGanancia Float    @default(30)
+  impuestos      Float    @default(22)
+  updatedAt      DateTime @updatedAt
+}
