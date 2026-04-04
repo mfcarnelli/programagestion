@@ -1,0 +1,3 @@
+¡Éxito! Creado usuario ADMIN en Supabase.
+Usuario: Mauro
+Contraseña: 123456
