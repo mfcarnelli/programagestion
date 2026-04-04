@@ -12,24 +12,36 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Contraseña", type: "password" },
       },
       async authorize(credentials) {
+        console.log('--- TEST: Iniciando authorize en NextAuth ---');
+        console.log('TEST - Credenciales recibidas:', { username: credentials?.username, passwordLength: credentials?.password?.length });
+
         if (!credentials?.username || !credentials?.password) {
+          console.log('TEST - Falta usuario o contraseña en credentials');
           throw new Error("Credenciales inválidas");
         }
 
+        console.log('TEST - Buscando usuario en PRISMA:', credentials.username);
         const user = await prisma.usuario.findUnique({
           where: { username: credentials.username },
         });
 
+        console.log('TEST - Usuario encontrado en BD:', user ? { id: user.id, username: user.username, activo: user.activo } : 'null');
+
         if (!user || !user.activo) {
+          console.log('TEST - Usuario es null o no está activo, retornando error');
           throw new Error("Usuario no encontrado o inactivo");
         }
 
+        console.log('TEST - Comparando contraseñas para usuario:', user.username);
         const isValid = await bcrypt.compare(credentials.password, user.password);
+        console.log('TEST - Resultado de comparación bcrypt:', isValid);
 
         if (!isValid) {
+          console.log('TEST - Contraseña incorrecta');
           throw new Error("Contraseña incorrecta");
         }
 
+        console.log('TEST - Autorización exitosa, retornando datos de usuario');
         return {
           id: user.id,
           name: user.nombre,

@@ -18,21 +18,30 @@ export default function LoginPage() {
     setError('');
 
     try {
+      console.log('--- TEST: Iniciando handleSubmit ---');
+      console.log('TEST - Valores a enviar al signIn:', { username, password });
+
       const res = await signIn('credentials', {
         username,
         password,
         redirect: false,
       });
 
+      console.log('TEST - Respuesta recibida de signIn:', res);
+
       if (res?.error) {
+        console.log('TEST - Se detectó un error en signIn:', res.error);
         setError('Usuario o contraseña incorrectos');
       } else {
+        console.log('TEST - signIn exitoso, procediendo a redirigir a /');
         router.push('/');
         router.refresh();
       }
     } catch (err) {
+      console.error('TEST - Error capturado en el catch de handleSubmit:', err);
       setError('Ocurrió un error. Intenta nuevamente.');
     } finally {
+      console.log('TEST - Finalizando handleSubmit (finally block)');
       setLoading(false);
     }
   };
